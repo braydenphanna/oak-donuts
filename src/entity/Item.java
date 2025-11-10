@@ -1,6 +1,8 @@
 package entity;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.text.DecimalFormat;
 
 /**
@@ -19,6 +21,15 @@ public class Item
         this.price = price;
         this.options = options;
     }
+    public Item(int ID, String name, double price, String options){
+        this.ID = ID;
+        this.name = name;
+        this.price = price;
+
+        String[] stringArray = options.split(",");
+        List<String> stringList = Arrays.asList(stringArray);
+        this.options = new ArrayList<>(stringList);
+    }
 
     public int getID() { return ID; }
 
@@ -27,6 +38,8 @@ public class Item
     public double getPrice() { return price; }
 
     public ArrayList<String> getOptions() { return options; }
+    
+    public String getOptionsAsString() { return String.join(",",options); }
 
     @Override
     public String toString() {

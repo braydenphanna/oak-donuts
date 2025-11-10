@@ -4,6 +4,7 @@ import java.awt.*;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Optional;
 
 import entity.*;
 import javax.swing.*;
@@ -14,7 +15,8 @@ import javax.swing.text.html.parser.Entity;
  */
 
 public class Main extends javax.swing.JFrame {
-    public ArrayList<entity.Item> menu = new ArrayList<entity.Item>();
+    private ArrayList<entity.Item> menu = new ArrayList<entity.Item>();
+    private static DAO itemDAO;
 
     public Main(){
         menu.add(new Item(0,"Glazed Donut", 1.49, new ArrayList<>(Arrays.asList("Icing", "Filling"))));
@@ -152,6 +154,33 @@ public class Main extends javax.swing.JFrame {
 
         setVisible(true);
     }
+
+    /**
+     * ITEM CRUD FUNCTIONS
+    */
+    private static void addItem(int id, String name, double price, ArrayList<String> options) {
+        Item item;
+        item = new Item(id, name, price, options);
+        itemDAO.insert(item);
+    }
+    
+    private static void updateItem(int id, String name, double price, ArrayList<String> options) {
+        Item item;
+        item = new Item(id, name, price, options);
+        itemDAO.update(item);
+    }
+    
+    private static void deleteItem(int id, String name, double price, ArrayList<String> options) {
+        Item item;
+        item = new Item(id, name, price, options);
+        itemDAO.delete(item);
+    }
+    
+    static Item getItem(int id) {
+        Optional<Item> item = itemDAO.get(id);
+        return item.orElseGet(() -> new Item(-1, "Non-exist", -1,"Non-exist"));
+    }
+
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(() -> {
             new Main();

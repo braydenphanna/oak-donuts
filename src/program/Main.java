@@ -5,6 +5,9 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.Vector;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 import entity.*;
 import javax.swing.*;
@@ -16,7 +19,7 @@ import javax.swing.text.html.parser.Entity;
 
 public class Main extends javax.swing.JFrame {
     private ArrayList<entity.Item> menu = new ArrayList<entity.Item>();
-    private static DAO itemDAO;
+    private static ItemDAO itemDAO = new ItemDAO();
 
     public Main(){
         menu.add(new Item(0,"Glazed Donut", 1.49, new ArrayList<>(Arrays.asList("Icing", "Filling"))));
@@ -110,14 +113,11 @@ public class Main extends javax.swing.JFrame {
         menulabel.setForeground(Color.BLACK);
         centerPanel.add(menulabel);
 
-        List test = new List(4);
-        test.add("test");
-        test.add("testtoo");
-
-        List menuItemNames = new List(menu.size());
-        for (Item item : menu) {
-            menuItemNames.add(item.toString()+"\n");
+        String[] menuStringArr = new String[menu.size()];
+        for(int i = 0; i < menu.size(); i++){
+            menuStringArr[i] = menu.get(i).toString();
         }
+        JList<String> menuItemNames = new JList<String>(menuStringArr);
         JScrollPane menuScrollPane = new JScrollPane(menuItemNames);
         centerPanel.add(menuScrollPane);
 
@@ -127,10 +127,27 @@ public class Main extends javax.swing.JFrame {
         add(eastPanel, BorderLayout.EAST);
 
         JButton addButton = new JButton("Add to Order");
+        addButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String selectedItem = menuItemNames.getSelectedValue();
+                int selectedItemIndex = menuItemNames.getSelectedIndex();
+                if (selectedItem != null) {
+                    // Perform actions with the selected item
+                    System.out.println("Selected item: " + selectedItem);
+
+                    System.out.println("Selected item index: " + selectedItemIndex);
+                    Item i = menu.get(selectedItemIndex);
+                    addItem(i.getID(), i.getName(), i.getPrice(), i.getOptions());
+                    initComponents();
+                } else {
+                    System.out.println("No item selected.");
+                }
+            }
+        });
         centerPanel.add(addButton);
 
         JTable orderTable = new JTable();
-        orderTable.setModel(new javax.swing.table.DefaultTableModel(
+        javax.swing.table.DefaultTableModel dtm = new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
@@ -145,8 +162,14 @@ public class Main extends javax.swing.JFrame {
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
             }
-        });
-        orderTable.setCellSelectionEnabled(true);
+        };
+        if (itemDAO.getAll()!=null){
+                java.util.List<Item> currentOrder = itemDAO.getAll();
+            for(Item item : currentOrder){
+                dtm.addRow(new Object[]{item.getName(), item.getOptionsAsString(), 1,item.getPrice(),item.getPrice()*1});
+            }
+            orderTable.setModel(dtm);
+        }
         
         JScrollPane orderScroll = new JScrollPane(orderTable);
         orderScroll.setPreferredSize(new Dimension(400, 400)); // adjust size as you like

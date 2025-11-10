@@ -58,7 +58,7 @@ public class ItemDAO implements DAO<Item>
         ResultSet rs = null;
         items = new ArrayList<>();
         try {
-            String sql = "SELECT * FROM HD_Customer";
+            String sql = "SELECT * FROM HD_Item";
             rs = db.executeQuery(sql);
             Item item = null;
             while (rs.next()) {
@@ -81,7 +81,7 @@ public class ItemDAO implements DAO<Item>
     {
         DB db = DB.getInstance();
         try {
-            String sql = "INSERT INTO HD_Customer(Item_ID, Item_Name, Item_Price, Item_Options) VALUES (?, ?, ?, ?)";
+            String sql = "INSERT INTO HD_Item(Item_ID, Item_Name, Item_Price, Item_Options) VALUES (?, ?, ?, ?)";
             PreparedStatement stmt = db.getPreparedStatement(sql);
             stmt.setInt(1, item.getID());
             stmt.setString(2, item.getName());

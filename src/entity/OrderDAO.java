@@ -38,7 +38,7 @@ public class OrderDAO implements DAO<Order>
             rs = stmt.executeQuery();
             Order order = null;
             while (rs.next()) {
-                order = new Order(rs.getInt("Order_ID"), rs.getInt("Order_Price"), rs.getString("Order_Date_Time"), rs.getString("Item_Name"));
+                order = new Order(rs.getInt("Order_ID"), rs.getDouble("Order_Price"), rs.getString("Order_Date_Time"), rs.getString("Item_Name"));
             }
             return Optional.ofNullable(order);
         } catch (SQLException ex) {
@@ -61,7 +61,7 @@ public class OrderDAO implements DAO<Order>
             rs = db.executeQuery(sql);
             Order order = null;
             while (rs.next()) {
-                order = new Order(rs.getInt("Order_ID"), rs.getInt("Order_Price"), rs.getString("Order_Date_Time"), rs.getString("Item_Name"));
+                order = new Order(rs.getInt("Order_ID"), rs.getDouble("Order_Price"), rs.getString("Order_Date_Time"), rs.getString("Item_Name"));
                 orders.add(order);
             }
             return orders;
@@ -83,7 +83,7 @@ public class OrderDAO implements DAO<Order>
             String sql = "INSERT INTO HD_Order(Order_ID, Order_Price, Order_Date_Time, Item_Name) VALUES (?, ?, ?, ?)";
             PreparedStatement stmt = db.getPreparedStatement(sql);
             stmt.setInt(1, order.getID());
-            stmt.setInt(2, order.getPrice());
+            stmt.setDouble(2, order.getPrice());
             stmt.setString(3, order.getDateTime());
             stmt.setString(4, order.getItemName());
             int rowInserted = stmt.executeUpdate();
@@ -105,10 +105,10 @@ public class OrderDAO implements DAO<Order>
         try {
             String sql = "UPDATE HD_Order SET Order_Price=?, Order_Date_Time=?, Item_Name=? WHERE Order_ID=?";
             PreparedStatement stmt = db.getPreparedStatement(sql);
-            stmt.setInt(1, order.getPrice());
+            stmt.setDouble(1, order.getPrice());
             stmt.setString(2, order.getDateTime());
             stmt.setString(3, order.getItemName());
-            stmt.setInt(5, order.getID());
+            stmt.setInt(4, order.getID());
             int rowsUpdated = stmt.executeUpdate();
             if (rowsUpdated > 0) {
                 System.out.println("An existing order was updated successfully!");

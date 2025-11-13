@@ -1,7 +1,9 @@
 package program;
 
 import java.awt.*;
+import java.lang.classfile.ClassFile.Option;
 import java.lang.reflect.Array;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
@@ -10,11 +12,14 @@ import java.awt.event.*;
 
 import entity.*;
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.html.parser.Entity;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * @author braydenphanna
@@ -24,8 +29,11 @@ public class Main extends javax.swing.JFrame {
     private ArrayList<entity.Item> menu = new ArrayList<entity.Item>();
     private static ItemDAO itemDAO = new ItemDAO();
     private static OrderDAO orderDAO = new OrderDAO();
+    private int orderIndex = 0;
+    private int itemIndex = 0;
 
     public Main(){
+
         menu.add(new Item(0,"Glazed Donut", 1.49, "Icing,Chocolate,Vanilla\nFilling,Jelly,Cream"));
         menu.add(new Item(1,"Donut w/ Sprinkles", 1.79, "Icing,Chocolate,Vanilla\nFilling,Jelly,Cream"));
         menu.add(new Item(2,"House Coffee", 2.00,"Sugar,A little,A lot\nCream,A little,A lot"));
@@ -121,7 +129,6 @@ public class Main extends javax.swing.JFrame {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 if ( !e.getValueIsAdjusting() && !menuItemNames.isSelectionEmpty()) {  
-                    System.out.print("test");
                     if(menuItemNames.getSelectedIndex()>=0){
                         generateItemOptions(menuItemNames, itemOptionsLabel, optionLabel, optionComboBox, optionLabel2, optionComboBox2);
                     }
@@ -184,7 +191,18 @@ public class Main extends javax.swing.JFrame {
                     System.out.println("Selected item index: " + selectedItemIndex);
                     Item i = menu.get(selectedItemIndex);
                     addItem(i.getID(), i.getName(), i.getPrice(), ""+optionComboBox.getSelectedItem().toString()+"\n"+optionComboBox2.getSelectedItem().toString());
+                    for(int j = 0; j<(int)quantitySpinner.getValue(); j++){
+                        if(getOrder(orderIndex).getID()==-1){
+                            addOrder(orderIndex,i.getPrice(),LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),i.getName());
+                            System.out.println("NEW ORDER " + getOrder(orderIndex).getID());
+                        }else{
+                            updateOrder(orderIndex,getOrder(orderIndex).getPrice()+i.getPrice(),LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),i.getName());
+                            System.out.println("UPDATE ORDER " + getOrder(orderIndex).getID());
+                        }
+                    }
+                    initComponents();
                     updateOrderTable(dtm, i, (int)quantitySpinner.getValue());
+                    quantitySpinner.setValue(1);
                 } else {
                     System.out.println("No item selected.");
                 }
@@ -195,13 +213,14 @@ public class Main extends javax.swing.JFrame {
 
         // EAST PANEL
         JPanel eastPanel = new JPanel();
+        eastPanel.setLayout(new BoxLayout(eastPanel, BoxLayout.Y_AXIS));
         eastPanel.setBorder(BorderFactory.createLineBorder(Color.GREEN));
         add(eastPanel, BorderLayout.EAST);
 
         JTable orderTable = new JTable();
         
         if (itemDAO.getAll()!=null){
-                java.util.List<Item> currentOrder = itemDAO.getAll();
+            java.util.List<Item> currentOrder = itemDAO.getAll();
             for(Item item : currentOrder){
                 dtm.addRow(new Object[]{item.getName(), item.getOptionsAsString(), quantitySpinner.getValue(),item.getPrice(),item.getPrice()*(int)quantitySpinner.getValue()});
             }
@@ -212,6 +231,48 @@ public class Main extends javax.swing.JFrame {
         orderScroll.setPreferredSize(new Dimension(400, 400)); // adjust size as you like
         eastPanel.add(orderScroll);
 
+        JPanel lowerEastPanel = new JPanel();
+        lowerEastPanel.setLayout(new BorderLayout());
+
+        JPanel lowerEastEastPanel = new JPanel();
+        lowerEastEastPanel.setLayout(new BoxLayout(lowerEastEastPanel, BoxLayout.Y_AXIS));
+        JLabel subtotalLabel = new JLabel("Subtotal:");
+        lowerEastEastPanel.add(subtotalLabel);
+        JLabel taxLabel = new JLabel("Tax (6%):");
+        lowerEastEastPanel.add(taxLabel);
+        JLabel totalPanel = new JLabel("Total:");
+        lowerEastEastPanel.add(totalPanel);
+
+
+        lowerEastPanel.add(lowerEastEastPanel, BorderLayout.WEST);
+
+        JPanel lowerEastWestPanel = new JPanel();
+        lowerEastWestPanel.setLayout(new BoxLayout(lowerEastWestPanel, BoxLayout.Y_AXIS));
+        
+
+       
+        JLabel subtotalAmount = new JLabel("$0.00");
+        JLabel taxAmount = new JLabel("$0.00");
+        JLabel totalAmount = new JLabel("$0.00");
+        if(getOrder(orderIndex).getID()!=-1){
+            DecimalFormat df = new DecimalFormat("#.00");
+            subtotalAmount.setText("$"+df.format(getOrder(orderIndex).getPrice()));
+            taxAmount.setText("$"+df.format(getOrder(orderIndex).getPrice()*0.06));
+            totalAmount.setText("$"+(df.format((getOrder(orderIndex).getPrice()+getOrder(orderIndex).getPrice()*0.06))));
+        }
+        lowerEastWestPanel.add(subtotalAmount);
+        lowerEastWestPanel.add(taxAmount);
+        lowerEastWestPanel.add(totalAmount);
+
+        JButton clearButton = new JButton("Clear");
+        lowerEastWestPanel.add(clearButton);
+        JButton checkoutButton = new JButton("Checkout");
+        lowerEastWestPanel.add(checkoutButton);
+        
+
+        lowerEastPanel.add(lowerEastWestPanel, BorderLayout.EAST);
+
+        eastPanel.add(lowerEastPanel);
         setVisible(true);
     }
 
@@ -243,7 +304,7 @@ public class Main extends javax.swing.JFrame {
         itemDAO.insert(item);
     }
     
-    private static void updateItem(int id, String name, double price, String[][] options) {
+    private static void updateItem(int id, String name, double price, String options) {
         Item item;
         item = new Item(id, name, price, options);
         itemDAO.update(item);
@@ -259,6 +320,37 @@ public class Main extends javax.swing.JFrame {
         Optional<Item> item = itemDAO.get(id);
         return item.orElseGet(() -> new Item(-1, "Non-exist", -1,"Non-exist"));
     }
+
+    /**
+     * ORDER CRUD FUNCTIONS
+    */
+    private static void addOrder(int ID, double price, String dateTime,  String itemName) {
+        Order order;
+        order = new Order(ID, price, dateTime, itemName);
+        orderDAO.insert(order);
+    }
+    
+    private static void updateOrder(int ID, double price, String dateTime, String itemName) {
+        Order order;
+        order = new Order(ID, price, dateTime, itemName);
+        orderDAO.update(order);
+    }
+    
+    private static void deleteOrder(int ID, double price, String dateTime, String itemName) {
+        Order order;
+        order = new Order(ID, price, dateTime, itemName);
+        orderDAO.delete(order);
+    }
+    
+    static Order getOrder(int id) {
+    Optional<Order> order = orderDAO.get(id);
+    if (order!=null && order.isPresent()) {
+        return order.get();
+    } else {
+        System.out.println("Order with ID " + id + " not found.");
+        return new Order(-1, -1, "Non-exist", "Non-exist");
+    }
+}
 
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(() -> {

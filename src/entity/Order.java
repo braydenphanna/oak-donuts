@@ -11,25 +11,23 @@ package entity;
 public class Order 
 {
     private int ID;
-    private int price;
+    private double price;
     private String dateTime;
-    private Item[] items;
-    private int[] itemQuanities;
+    private String itemName;
     
-    public Order(int ID, int price, String dateTime, Item[] items, int[] itemQuanities)
+    public Order(int ID, double price, String dateTime, String itemName)
     {
         this.ID = ID;
         this.price = price;
         this.dateTime = dateTime;
-        this.items = items;
-        this.itemQuanities = itemQuanities;
+        this.itemName = itemName;
     }
 
     public int getID() {
         return ID;
     }
 
-    public int getPrice() {
+    public double getPrice() {
         return price;
     }
 
@@ -37,15 +35,12 @@ public class Order
         return dateTime;
     }
 
-    public Item[] getItems() {
-        return items;
+    public String getItemName() {
+        return itemName;
     }
-     public int[] getItemQuanities() {
-        return itemQuanities;
-    }
-    
+
     @Override
     public String toString() {
-        return "Order{" + "ID=" + ID + ", price=" + price + ", dateTime=" + dateTime + ", items=" + items +'}';
+        return "Order{" + "ID=" + ID + ", price=" + price + ", dateTime=" + dateTime + ", itemName=" + itemName+'}';
     }
 }

@@ -14,9 +14,11 @@ import java.awt.event.*;
 
 import entity.*;
 import javax.swing.*;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.border.Border;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.html.StyleSheet.BoxPainter;
 import javax.swing.text.html.parser.Entity;
 import javax.swing.text.Document;
 import javax.swing.event.DocumentListener;
@@ -34,6 +36,7 @@ public class Main extends javax.swing.JFrame {
     private static ItemDAO itemDAO = new ItemDAO();
     private static OrderDAO orderDAO = new OrderDAO();
     private int orderIndex = 0;
+    private int itemIndex = 0;
 
     private JList<String> menuItemNames;
     private JScrollPane menuScrollPane;
@@ -42,15 +45,21 @@ public class Main extends javax.swing.JFrame {
 
     private JComboBox<String> categoryComboBox;
 
-    public Main(){
+    JLabel subtotalAmount;
+    JLabel taxAmount;
+    JLabel totalAmount;
 
+    public Main(){
+        // Populates the menu
         menu.add(new Item(0,"Glazed Donut", 1.49, "Icing,Chocolate,Vanilla\nFilling,Jelly,Cream"));
         menu.add(new Item(1,"Donut w/ Sprinkles", 1.79, "Icing,Chocolate,Vanilla\nFilling,Jelly,Cream"));
         menu.add(new Item(2,"Breakfast Sandwich", 4.50, "Icing,Chocolate,Vanilla\nFilling,Jelly,Cream"));
         menu.add(new Item(3,"Latte", 3.00, "Icing,Chocolate,Vanilla\nFilling,Jelly,Cream"));
         menu.add(new Item(4,"House Coffee", 2.00,"Sugar,A little,A lot\nCream,A little,A lot"));
+
         initComponents();
     }
+    // Does the bulk of setting up the gui elements
     private void initComponents(){
         setTitle("Oak Donuts");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -58,12 +67,13 @@ public class Main extends javax.swing.JFrame {
         pack(); 
         setLocationRelativeTo(null);
         setResizable(false);
-
+        getRootPane().setBorder(BorderFactory.createLineBorder(Color.GRAY));
         setLayout(new BorderLayout());
 
         // TITLE PANEL
         JPanel titlePanel = new JPanel();
-        titlePanel.setBorder(BorderFactory.createLineBorder(Color.RED));
+        titlePanel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+        titlePanel.setBackground(Color.LIGHT_GRAY);
         add(titlePanel, BorderLayout.NORTH);
 
         JLabel title = new JLabel("Oak Donuts");
@@ -72,37 +82,44 @@ public class Main extends javax.swing.JFrame {
         titlePanel.add(title);
 
         // WEST PANEL
+        
         JPanel westPanel = new JPanel();
         westPanel.setLayout(new BoxLayout(westPanel, BoxLayout.Y_AXIS));
-        westPanel.setBorder(BorderFactory.createLineBorder(Color.BLUE));
+        westPanel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
         westPanel.setPreferredSize(new Dimension(150,600));
         add(westPanel, BorderLayout.WEST);
 
         JLabel fitlersLabel= new JLabel("Filters");
         fitlersLabel.setFont(new Font("Verdana", Font.BOLD, 16));
         fitlersLabel.setForeground(Color.BLACK);
+        fitlersLabel.setBorder(BorderFactory.createLineBorder(Color.MAGENTA));
+        fitlersLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         westPanel.add(fitlersLabel);
 
         JLabel categoryLabel = new JLabel("Category:");
         categoryLabel.setFont(new Font("Verdana", Font.BOLD, 12));
         categoryLabel.setForeground(Color.BLACK);
+        categoryLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         westPanel.add(categoryLabel);
 
         categoryComboBox = new JComboBox<>(new String[]{"All","Food","Drinks"});
         categoryComboBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                System.out.print("TEST");
                 updateMenuItems();
             }
         });
+
+        categoryComboBox.setAlignmentX(Component.LEFT_ALIGNMENT);
         westPanel.add(categoryComboBox);
 
         JLabel searchLabel = new JLabel("Search:");
         searchLabel.setFont(new Font("Verdana", Font.BOLD, 12));
         searchLabel.setForeground(Color.BLACK);
+        searchLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         westPanel.add(searchLabel);
 
         searchField = new JTextField();
+        searchField.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         Document doc = searchField.getDocument();
 
@@ -128,24 +145,29 @@ public class Main extends javax.swing.JFrame {
         itemOptionsLabel.setFont(new Font("Verdana", Font.BOLD, 16));
         itemOptionsLabel.setForeground(Color.BLACK);
         itemOptionsLabel.setVisible(false);
+        itemOptionsLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         westPanel.add(itemOptionsLabel);
 
         JLabel optionLabel = new JLabel();
         optionLabel.setFont(new Font("Verdana", Font.BOLD, 12));
         optionLabel.setForeground(Color.BLACK);
+        optionLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         westPanel.add(optionLabel);
 
         JComboBox<String> optionComboBox = new JComboBox<>();
         optionComboBox.setVisible(false);
+        optionComboBox.setAlignmentX(Component.LEFT_ALIGNMENT);
         westPanel.add(optionComboBox);
 
         JLabel optionLabel2 = new JLabel();
         optionLabel2.setFont(new Font("Verdana", Font.BOLD, 12));
         optionLabel2.setForeground(Color.BLACK);
+        optionLabel2.setAlignmentX(Component.LEFT_ALIGNMENT);
         westPanel.add(optionLabel2);
 
         JComboBox<String> optionComboBox2 = new JComboBox<>();
         optionComboBox2.setVisible(false);
+        optionComboBox2.setAlignmentX(Component.LEFT_ALIGNMENT);
         westPanel.add(optionComboBox2);
 
         
@@ -160,6 +182,7 @@ public class Main extends javax.swing.JFrame {
             }
         });
         
+        westPanel.add(Box.createVerticalGlue());
 
         westPanel.add(Box.createVerticalStrut(600));
 
@@ -167,12 +190,13 @@ public class Main extends javax.swing.JFrame {
 
         JPanel centerPanel = new JPanel();
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
-        centerPanel.setBorder(BorderFactory.createLineBorder(Color.MAGENTA));
+        centerPanel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
         add(centerPanel, BorderLayout.CENTER);
-
-        JLabel menulabel= new JLabel("Menu");
+        
+        JLabel menulabel= new JLabel("Menu", SwingConstants.CENTER);
         menulabel.setFont(new Font("Verdana", Font.BOLD, 16));
-        menulabel.setForeground(Color.BLACK);
+        menulabel.setBorder(BorderFactory.createLineBorder(Color.RED));
+        menulabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         centerPanel.add(menulabel);
 
         menuScrollPane = new JScrollPane(menuItemNames);
@@ -216,17 +240,19 @@ public class Main extends javax.swing.JFrame {
                     System.out.println("Selected item index: " + selectedItemIndex);
                     Item i = menu.get(selectedItemIndex);
                     String optionsString = i.getOptions()[0][0] + ": "+optionComboBox.getSelectedItem().toString()+"\n"+i.getOptions()[1][0] + ": "+optionComboBox2.getSelectedItem().toString();
-                    addItem(i.getID(), i.getName(), i.getPrice(), optionsString);
+
                     for(int j = 0; j<(int)quantitySpinner.getValue(); j++){
+                        addItem(itemIndex++, i.getName(), i.getPrice(), optionsString);
                         if(getOrder(orderIndex).getID()==-1){
                             addOrder(orderIndex,i.getPrice(),LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),i.getName());
                             System.out.println("NEW ORDER " + getOrder(orderIndex).getID());
                         }else{
                             updateOrder(orderIndex,getOrder(orderIndex).getPrice()+i.getPrice(),LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),i.getName());
-                            System.out.println("UPDATE ORDER " + getOrder(orderIndex).getID());
+                            System.out.println("UPDATE ORDER " + getOrder(orderIndex).getID()+" | ITEMS: "+ itemIndex);
                         }
                     }
                     updateOrderTable(dtm, i, (int)quantitySpinner.getValue(), optionsString);
+                    updatePrices(subtotalAmount,taxAmount,totalAmount);
                     quantitySpinner.setValue(1);
                     menuItemNames.clearSelection();
                 } else {
@@ -240,25 +266,43 @@ public class Main extends javax.swing.JFrame {
         // EAST PANEL
         JPanel eastPanel = new JPanel();
         eastPanel.setLayout(new BoxLayout(eastPanel, BoxLayout.Y_AXIS));
-        eastPanel.setBorder(BorderFactory.createLineBorder(Color.GREEN));
+        eastPanel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
         add(eastPanel, BorderLayout.EAST);
 
         JTable orderTable = new JTable();
         
-        if (itemDAO.getAll()!=null){
-            java.util.List<Item> currentOrder = itemDAO.getAll();
-            for(Item item : currentOrder){  
-                String[] options = item.getOptionsAsString().split("\n");
-                
-                dtm.addRow(new Object[]{item.getName(), options[0]+", " +options[1], quantitySpinner.getValue(),item.getPrice(),item.getPrice()*(int)quantitySpinner.getValue()});
-            }
-            orderTable.setModel(dtm);
-            orderTable.getColumnModel().getColumn(0).setPreferredWidth(150);
-            orderTable.getColumnModel().getColumn(1).setPreferredWidth(350);
+        int o = 0;
+        while(getOrder(o).getID()!=-1){
+            o++;
         }
+        orderIndex=o;
+        int i = 0;
+        while(getItem(i).getID()!=-1){  
+            Item item = getItem(i);
+            String[] options = item.getOptionsAsString().split("\n");
+            
+            boolean found = false;
+            for(int j =0; j<dtm.getRowCount(); j++){
+                Item previouslyAddedItem = getItem(j);
+                System.out.print(previouslyAddedItem.getName() +" == "+item.getName() +" & "+previouslyAddedItem.getOptionsAsString() +" = "+item.getOptionsAsString());
+                if(previouslyAddedItem.getName().equals(item.getName()) && previouslyAddedItem.getOptionsAsString().equals(item.getOptionsAsString())){
+                    dtm.setValueAt((int)dtm.getValueAt(j, 2)+1, j, 2);
+                    dtm.setValueAt(Double.parseDouble((dtm.getValueAt(j, 4).toString().replace("$", "")))+item.getPrice(), j, 4);
+                    found = true;
+                    break;
+                }
+            }
+            DecimalFormat df = new DecimalFormat("#.00");
+            if(found==false) dtm.addRow(new Object[]{item.getName(), options[0]+", " +options[1], 1,"$"+df.format(item.getPrice()),"$"+df.format(item.getPrice())});
+            i++;
+        }
+        itemIndex=i;
+        orderTable.setModel(dtm);
+        orderTable.getColumnModel().getColumn(0).setPreferredWidth(150);
+        orderTable.getColumnModel().getColumn(1).setPreferredWidth(350);
         
         JScrollPane orderScroll = new JScrollPane(orderTable);
-        orderScroll.setPreferredSize(new Dimension(400, 400)); // adjust size as you like
+        orderScroll.setPreferredSize(new Dimension(400, 500));
         eastPanel.add(orderScroll);
 
         JPanel lowerEastPanel = new JPanel();
@@ -271,6 +315,7 @@ public class Main extends javax.swing.JFrame {
         JLabel taxLabel = new JLabel("Tax (6%):");
         lowerEastEastPanel.add(taxLabel);
         JLabel totalPanel = new JLabel("Total:");
+        totalPanel.setFont(new Font("Verdana", Font.BOLD, 16));
         lowerEastEastPanel.add(totalPanel);
 
 
@@ -279,41 +324,83 @@ public class Main extends javax.swing.JFrame {
         JPanel lowerEastWestPanel = new JPanel();
         lowerEastWestPanel.setLayout(new BoxLayout(lowerEastWestPanel, BoxLayout.Y_AXIS));
         
-
-       
-        JLabel subtotalAmount = new JLabel("$0.00");
-        JLabel taxAmount = new JLabel("$0.00");
-        JLabel totalAmount = new JLabel("$0.00");
-        if(getOrder(orderIndex).getID()!=-1){
-            DecimalFormat df = new DecimalFormat("#.00");
-            subtotalAmount.setText("$"+df.format(getOrder(orderIndex).getPrice()));
-            taxAmount.setText("$"+df.format(getOrder(orderIndex).getPrice()*0.06));
-            totalAmount.setText("$"+(df.format((getOrder(orderIndex).getPrice()+getOrder(orderIndex).getPrice()*0.06))));
-        }
+        subtotalAmount = new JLabel("$0.00");
+        taxAmount = new JLabel("$0.00");
+        totalAmount = new JLabel("$0.00");
+        totalAmount.setFont(new Font("Verdana", Font.BOLD, 16));
+        if(getOrder(orderIndex).getID()!=-1) updatePrices(subtotalAmount,taxAmount,totalAmount);
         lowerEastWestPanel.add(subtotalAmount);
         lowerEastWestPanel.add(taxAmount);
         lowerEastWestPanel.add(totalAmount);
 
+        JPanel lowerlowerEastPanel = new JPanel();
+        lowerlowerEastPanel.setLayout(new BoxLayout(lowerlowerEastPanel, BoxLayout.X_AXIS));
         JButton clearButton = new JButton("Clear");
-        lowerEastWestPanel.add(clearButton);
-        JButton checkoutButton = new JButton("Checkout");
-        lowerEastWestPanel.add(checkoutButton);
-        
+        clearButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                int i = itemIndex-1;
+                Item item;
+                while(getItem(i).getID()>=0){  
+                    item = getItem(i);
+                    deleteItem(item.getID(), item.getName(), item.getPrice(), item.getOptions());
+                    i--;
+                }
+                Order order = getOrder(orderIndex);
+                deleteOrder(order.getID(),order.getPrice(), order.getDateTime(), order.getItemName());
 
+                itemIndex=0;
+                dtm.setRowCount(0);
+
+                subtotalAmount.setText("$0.00");
+                taxAmount.setText("$0.00");
+                totalAmount.setText("$0.00");
+            }
+        });
+        lowerlowerEastPanel.add(clearButton);
+        
+        JButton checkoutButton = new JButton("Checkout");
+        checkoutButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if(dtm.getRowCount()>0){
+                    int i = itemIndex-1;
+
+                    Item item;
+                    while(getItem(i).getID()>=0){  
+                        item = getItem(i);
+                        deleteItem(item.getID(), item.getName(), item.getPrice(), item.getOptions());
+                        i--;
+                    }
+
+                    dtm.setRowCount(0);
+
+                    DecimalFormat df = new DecimalFormat("#.00");
+                    JOptionPane popup = new JOptionPane();
+                    popup.showMessageDialog(null, "Thank you for your purchase!\nYour total is $"+ df.format(getOrder(orderIndex).getPrice()));
+                    itemIndex=0;
+                    orderIndex++;
+                    
+                }
+            }
+        });
+        lowerlowerEastPanel.add(checkoutButton);
+        
         lowerEastPanel.add(lowerEastWestPanel, BorderLayout.EAST);
 
         eastPanel.add(lowerEastPanel);
+        eastPanel.add(new JSeparator(SwingConstants.HORIZONTAL));
+        eastPanel.add(lowerlowerEastPanel);
+
         setVisible(true);
     }
 
     private void generateItemOptions(JList<String> menuItemNames, JLabel itemsOptionsLabel, JLabel option1, JComboBox combo1, JLabel option2, JComboBox combo2){
         itemsOptionsLabel.setVisible(true);
         Item item = menu.get(menuItemNames.getSelectedIndex());
-        option1.setText(item.getOptions()[0][0]);
+        option1.setText(item.getOptions()[0][0]+":");
         combo1.setModel(new DefaultComboBoxModel<>( new String[]{item.getOptions()[0][1],item.getOptions()[0][2]}));
         combo1.setVisible(true);
         try {
-            option2.setText(item.getOptions()[1][0]);
+            option2.setText(item.getOptions()[1][0]+":");
             combo2.setModel(new DefaultComboBoxModel<>( new String[]{item.getOptions()[1][1],item.getOptions()[1][2]}));
             combo2.setVisible(true);
         } catch (Exception e){
@@ -356,7 +443,14 @@ public class Main extends javax.swing.JFrame {
 
     private void updateOrderTable(DefaultTableModel dtm, Item item, int quanity, String optionsString){
         String[] options =optionsString.split("\n");
-          dtm.addRow(new Object[]{item.getName(), options[0]+", "+ options[1], quanity,item.getPrice(),item.getPrice()*quanity});
+        DecimalFormat df = new DecimalFormat("#.00");
+        dtm.addRow(new Object[]{item.getName(), options[0]+", " +options[1], quanity,"$"+df.format(item.getPrice()),"$"+df.format(item.getPrice()*quanity)});
+    }
+    private void updatePrices(JLabel subtotalAmount, JLabel taxAmount, JLabel totalAmount){
+        DecimalFormat df = new DecimalFormat("#.00");
+        subtotalAmount.setText("$"+df.format(getOrder(orderIndex).getPrice()));
+        taxAmount.setText("$"+df.format(getOrder(orderIndex).getPrice()*0.06));
+        totalAmount.setText("$"+(df.format((getOrder(orderIndex).getPrice()+getOrder(orderIndex).getPrice()*0.06))));
     }
     /**
      * ITEM CRUD FUNCTIONS
